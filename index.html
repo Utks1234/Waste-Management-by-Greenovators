@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greenovators - AI Waste Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        /* Floating Animation */
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Pulse Animation */
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* screens */
+        #chatbot-screen, #image-screen, #reports-screen, #manual-entry-screen, #dashboard-page {
+            display: none; 
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        #dashboard-page {
+            display: none;
+        }
+
+        /* Chat Styles */
+        .chat-messages {
+            height: calc(100vh - 140px);
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bot-bubble {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            color: #1e293b;
+            padding: 15px 20px;
+            border-radius: 20px 20px 20px 5px;
+            max-width: 85%;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: slideInLeft 0.3s ease;
+        }
+
+        .user-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 20px 20px 5px 20px;
+            align-self: flex-end;
+            max-width: 85%;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chip:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Image Grid */
+        .image-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        .sample-img {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .sample-img:hover { 
+            border-color: white; 
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 25px 30px -10px rgba(0,0,0,0.3);
+        }
+
+        /* Upload Area */
+        .upload-area {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+        }
+
+        /* Form Inputs */
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+            background: white;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Report Entry */
+        .report-entry {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .report-entry:hover {
+            transform: translateX(5px);
+            background: white;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Text Colors for Visibility */
+        .text-white-important {
+            color: white !important;
+        }
+
+        .text-white-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Login Page Styles */
+        #login-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 3000;
+        }
+
+        .main-wrapper {
+            max-width: 1350px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 30px 60px -20px rgba(20, 70, 30, 0.4), 0 0 0 1px rgba(180, 220, 160, 0.5) inset;
+            border-radius: 48px;
+            margin: 2rem 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .first-image-area {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 2.5rem 3rem;
+            border-bottom: 2px solid #c0e0b0;
+            border-radius: 48px 48px 0 0;
+        }
+
+        .second-image-area {
+            background: rgba(245, 255, 240, 0.5);
+            backdrop-filter: blur(8px);
+            padding: 2.5rem 3rem;
+            border-radius: 0 0 48px 48px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .login-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.2rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #b8dbb0;
+        }
+
+        .logo-area {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(130deg, #1b4c1c, #3e8e3e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-area span {
+            font-weight: 300;
+            background: none;
+            -webkit-text-fill-color: #70a56e;
+        }
+
+        .login-link {
+            background: rgba(30, 70, 30, 0.1);
+            backdrop-filter: blur(8px);
+            border: 2px solid #317a3a;
+            color: #1b4c1c;
+            font-weight: 600;
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            transition: 0.25s;
+            box-shadow: 0 8px 16px -8px #345e30;
+            cursor: pointer;
+        }
+
+        .login-link:hover {
+            background: #2a6e2a;
+            color: white;
+            border-color: #aff0a0;
+            transform: scale(1.04);
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0 3rem;
+            background: linear-gradient(120deg, #dff3da, #efffec);
+            border-radius: 60px;
+            padding: 2rem 3rem;
+            box-shadow: 0 30px 40px -25px #1b4c1c;
+        }
+
+        .hero-text h1 {
+            font-size: 3.8rem;
+            line-height: 1.1;
+            background: linear-gradient(145deg, #0f3a0f, #2a732a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-text p {
+            font-size: 1.3rem;
+            color: #1f471f;
+            max-width: 550px;
+            margin: 1.5rem 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(130deg, #1b6e1b, #0f4a0f);
+            border: none;
+            font-size: 1.3rem;
+            font-weight: 600;
+            padding: 1rem 3rem;
+            border-radius: 60px;
+            color: white;
+            box-shadow: 0 20px 30px -10px #174d17, 0 2px 10px #b2ffb2 inset;
+            transition: all 0.25s;
+            border: 1px solid #afffab;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 30px 40px -10px #0f3f0f, 0 0 20px #dbffdb inset;
+            background: linear-gradient(130deg, #249f24, #156315);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 1.8rem;
+            margin: 2.5rem 0;
+        }
+
+        .stat-card-landing {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 36px;
+            padding: 2rem 1rem;
+            text-align: center;
+            border: 2px solid rgba(200, 240, 180, 0.8);
+            box-shadow: 0 25px 30px -15px #1d4a1d, 0 0 0 1px #eeffee inset;
+            transition: 0.25s;
+        }
+
+        .stat-card-landing:hover {
+            transform: scale(1.02) translateY(-6px);
+            background: rgba(255, 255, 255, 0.8);
+            border-color: #acf0a0;
+        }
+
+        .stat-number {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: #156315;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e4f1e;
+        }
+
+        .problem-text {
+            background: rgba(40, 80, 35, 0.2);
+            backdrop-filter: blur(8px);
+            padding: 2rem 2.5rem;
+            border-radius: 60px;
+            font-size: 1.3rem;
+            color: #0a380a;
+            border: 2px solid #bcf0b0;
+            box-shadow: 0 15px 25px -12px #1e4f1e;
+            font-weight: 500;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap: 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .tool-item {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px);
+            padding: 2.5rem 2rem;
+            border-radius: 48px;
+            border: 2px solid #c0f0b5;
+            box-shadow: 0 25px 30px -18px #1f571f;
+            transition: 0.3s;
+        }
+
+        .tool-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-8px);
+            box-shadow: 0 40px 45px -18px #135213;
+        }
+
+        .tool-item h3 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0f4f0f;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-item p {
+            font-size: 1.15rem;
+            color: #235e23;
+        }
+
+        .process-steps {
+            display: flex;
+            gap: 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .step {
+            background: rgba(250, 255, 245, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 42px;
+            padding: 2.5rem 2rem;
+            flex: 1;
+            border: 2px solid #a8e0a0;
+            box-shadow: 0 20px 30px -12px #1d541d;
+            text-align: center;
+        }
+
+        .step .step-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #136013;
+            opacity: 0.5;
+        }
+
+        .step h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a5e1a;
+        }
+
+        .cta-block {
+            background: linear-gradient(145deg, #1e4f1e, #0a3a0a);
+            border-radius: 70px;
+            padding: 4rem 3rem;
+            text-align: center;
+            border: 2px solid #9fe09f;
+            box-shadow: 0 30px 45px -15px #0a380a, 0 0 0 2px #d0ffd0 inset;
+        }
+
+        .cta-block h2 {
+            font-size: 3.5rem;
+            color: white;
+            text-shadow: 0 4px 12px #a0f0a0;
+        }
+
+        .cta-block p {
+            font-size: 1.5rem;
+            color: #d5ffd5;
+        }
+
+        .btn-light {
+            background: white;
+            color: #1a4f1a;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 1.2rem 4rem;
+            border-radius: 60px;
+            box-shadow: 0 20px 30px -8px #00000040, 0 4px 20px #b5ffb5 inset;
+            transition: 0.25s;
+            border: 2px solid #b2fcb2;
+            cursor: pointer;
+        }
+
+        .btn-light:hover {
+            transform: scale(1.05) translateY(-6px);
+            background: #f0fff0;
+            box-shadow: 0 35px 40px -12px #0a3f0a;
+        }
+
+        .footer {
+            border-top: 3px solid #a0d89e;
+            padding: 2rem 0;
+            display: flex;
+            justify-content: space-between;
+            color: #1d5e1d;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 20, 5, 0.7);
+            backdrop-filter: blur(15px);
+            z-index: 4000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: overlayPop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+        }
+
+        @keyframes overlayPop {
+            0% { opacity: 0; backdrop-filter: blur(0); }
+            100% { opacity: 1; backdrop-filter: blur(15px); }
+        }
+
+        .modal-card {
+            background: rgba(30, 50, 30, 0.6);
+            backdrop-filter: blur(25px);
+            border-radius: 64px;
+            padding: 3rem 3.5rem;
+            width: 480px;
+            border: 2px solid rgba(220, 255, 200, 0.5);
+            box-shadow: 0 50px 80px -20px #041a0a, 0 0 0 3px rgba(200, 255, 180, 0.3) inset;
+            animation: cardRise 0.5s ease;
+        }
+
+        @keyframes cardRise {
+            0% { opacity: 0; transform: scale(0.92) translateY(25px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-icon {
+            background: radial-gradient(circle at 30% 20%, #8cedb0, #0f7730);
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.8rem;
+            box-shadow: 0 15px 25px -5px #1e8a1e, 0 0 0 3px #d0ffd0 inset;
+        }
+
+        .input-fancy {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(190, 255, 180, 0.3);
+            border-radius: 40px;
+            padding: 1rem 1.5rem 1rem 3rem;
+            width: 100%;
+            color: white;
+            font-size: 1rem;
+            transition: 0.25s;
+        }
+
+        .input-fancy:focus {
+            border-color: #b2ffb2;
+            background: rgba(40, 80, 40, 0.6);
+            box-shadow: 0 0 30px #b6ffb6, 0 0 10px #afffaf inset;
+            outline: none;
+            transform: scale(1.02);
+        }
+
+        .input-fancy::placeholder {
+            color: rgba(220, 255, 200, 0.7);
+            font-weight: 300;
+        }
+
+        .btn-modal {
+            background: linear-gradient(130deg, #269f46, #0f7a2f);
+            border: none;
+            border-radius: 60px;
+            padding: 1.1rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 20px 30px -12px #0f4a0f, 0 2px 15px #c0ffc0 inset;
+            transition: 0.25s;
+            width: 100%;
+            border: 1px solid #b2fcb2;
+            cursor: pointer;
+        }
+
+        .btn-modal:hover {
+            transform: translateY(-4px) scale(1.02);
+            background: linear-gradient(130deg, #32ba52, #179a37);
+            box-shadow: 0 30px 40px -12px #166016, 0 0 25px #dcffdc inset;
+        }
+
+        .toggle-plain {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            color: rgba(255,255,240,0.9);
+        }
+
+        .toggle-plain button {
+            background: none;
+            border: 2px solid rgba(200, 255, 180, 0.5);
+            color: white;
+            padding: 0.3rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            backdrop-filter: blur(8px);
+            cursor: pointer;
+        }
+
+        .toggle-plain button:hover {
+            background: rgba(150, 255, 150, 0.2);
+            border-color: #b6ffb6;
+        }
+
+        .hidden-form { display: none; }
+
+        .close-modal {
+            position: absolute;
+            top: 25px; right: 25px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 48px; height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: 0.2s;
+        }
+
+        .close-modal:hover {
+            background: rgba(255,255,255,0.2);
+            transform: rotate(90deg);
+        }
+
+        /* Success Message */
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 5000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Email Notification Badge - FIXED */
+        .email-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 12px 24px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideInRight 0.5s ease;
+            pointer-events: none;
+        }
+
+        .email-badge i {
+            color: #10b981;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+        }
+
+        .email-badge span {
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Multiple emails badge */
+        .email-badge .email-list {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .email-badge .email-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+
+    <!-- Email Notification Badge - FIXED (Now visible) -->
+    <div class="email-badge">
+        <i data-lucide="bell-ring" class="w-5 h-5 text-yellow-300"></i>
+        
+    </div>
+
+    <!-- LOGIN PAGE (Starting Page) -->
+    <div id="login-page">
+        <div class="main-wrapper">
+            <!-- first image area -->
+            <div class="first-image-area">
+                <div class="container">
+                    <div class="login-bar">
+                        <div class="logo-area">Greenovators<span>.</span></div>
+                        <button class="login-link" id="headerLoginBtn"><i data-lucide="leaf" class="w-5 h-5 mr-1"></i>Login</button>
+                    </div>
+                    <div class="hero">
+                        <div class="hero-text">
+                            <h1>Waste Management<br>by Greenovators</h1>
+                            <p>Join the revolution in waste management. Use AI-powered tools to classify waste, track your impact, and contribute to a cleaner India.</p>
+                            <button class="btn-primary" id="getStartedBtn"><i data-lucide="sparkles" class="w-6 h-6 inline mr-2"></i>Get Started Free →</button>
+                        </div>
+                    </div>
+                    <div class="challenge-header text-center">
+                        <span class="text-emerald-800 font-semibold tracking-widest text-sm">THE CHALLENGE</span>
+                        <h2 class="text-5xl font-extrabold text-[#0f3a0f]">India & Global Waste Crisis</h2>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card-landing"><div class="stat-number">62M tons</div><div class="stat-label">India Waste / Year</div></div>
+                        <div class="stat-card-landing"><div class="stat-number">50M tons</div><div class="stat-label">Global E‑Waste</div></div>
+                        <div class="stat-card-landing"><div class="stat-number">9.46M tons</div><div class="stat-label">Plastic Waste (India)</div></div>
+                        <div class="stat-card-landing"><div class="stat-number">30%</div><div class="stat-label">Recycling Rate</div></div>
+                    </div>
+                    <div class="problem-text">
+                        <span class="font-bold text-xl">The Problem</span> — India generates over 62 million tons of waste annually, with only 30% recycled. Improper waste management leads to pollution, health issues, and environmental degradation. Together, we can change this.
+                    </div>
+                    <div class="solution-head mt-12">
+                        <div class="overline text-emerald-700 font-bold">OUR SOLUTION</div>
+                        <h2 class="text-5xl font-extrabold text-[#144014]">Smart Waste Management Tools</h2>
+                    </div>
+                    <div class="tools-grid">
+                        
+                        <div class="tool-item"><h3><i data-lucide="bot" class="w-10 h-10 text-green-800"></i> AI Chatbot</h3><p>Get instant answers about waste disposal, recycling tips, and environmental queries.</p></div>
+                        <div class="tool-item"><h3><i data-lucide="camera" class="w-10 h-10 text-green-800"></i> Image Classification</h3><p>Upload waste images and get AI‑powered classification with disposal recommendations.</p></div>
+                    </div>
+                    <div>
+                      <a href = "https://utks1234.github.io/P/">
+                      <div class="tool-item"><h3><i data-lucide="bot" class="w-10 h-10 text-green-800"></i> TOOLS OF CALCULATE</h3>
+                      </a>
+                    </div>
+                </div>
+            </div>
+            <!-- second image area -->
+            <div class="second-image-area">
+                <div class="container">
+                    <div class="tools-grid">
+                        <div class="tool-item"><h3><i data-lucide="clipboard-list" class="w-10 h-10 text-green-800"></i> Manual Reporting</h3><p>Submit waste reports with type, quantity, and location for tracking.</p></div>
+                        <div class="tool-item"><h3><i data-lucide="bar-chart-3" class="w-10 h-10 text-green-800"></i> Analytics Dashboard</h3><p>Track your contribution to waste management with detailed statistics.</p></div>
+                    </div>
+                    <div class="process-section mt-12">
+                        <div class="overline text-emerald-700 font-bold">SIMPLE PROCESS</div>
+                        <h2 class="text-5xl font-extrabold text-[#144014]">How It Works</h2>
+                        <div class="process-steps">
+                            <div class="step"><div class="step-number">1</div><h4>Sign Up</h4><p>Create your free account</p></div>
+                            <div class="step"><div class="step-number">2</div><h4>Report Waste</h4><p>Use AI or manual entry</p></div>
+                            <div class="step"><div class="step-number">3</div><h4>Track Impact</h4><p>Monitor your contribution</p></div>
+                        </div>
+                    </div>
+                    <div class="cta-block">
+                        <h2>Ready to Make a Difference?</h2>
+                        <p class="my-6">Join thousands of users contributing to a cleaner, greener India</p>
+                        <button class="btn-light" id="joinTodayBtn"><i data-lucide="users" class="w-7 h-7 inline mr-2"></i>Join Greenovators Today →</button>
+                    </div>
+                    <div class="footer">
+                        <div>© Greenovators — Building a sustainable future, one waste report at a time.</div>
+                        <div>© 2026 Greenovators. All rights reserved.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL (Login/Signup) -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="relative">
+            <button class="close-modal" id="closeModalBtn"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <div class="modal-card">
+                <div class="modal-icon"><i data-lucide="leaf" class="w-10 h-10 text-white drop-shadow-xl"></i></div>
+                <h2 id="modalTitle" class="text-3xl font-bold text-white text-center mb-1">🌱 Welcome Back</h2>
+                <p id="modalSub" class="text-emerald-200 text-center mb-7 text-sm">secure · green · future</p>
+
+                <!-- login form -->
+                <form id="loginForm" class="space-y-5" onsubmit="handleLogin(event)">
+                    <div class="relative">
+                        <i data-lucide="mail" class="absolute left-4 top-4 w-5 h-5 text-emerald-300"></i>
+                        <input type="email" id="loginEmail" placeholder="Your email" class="input-fancy pl-12" required>
+                    </div>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-4 top-4 w-5 h-5 text-emerald-300"></i>
+                        <input type="password" id="loginPassword" placeholder="Password" class="input-fancy pl-12" required>
+                    </div>
+                    <button type="submit" class="btn-modal"><i data-lucide="log-in" class="w-5 h-5 inline mr-2"></i>Sign In</button>
+                </form>
+
+                <!-- signup form (hidden) -->
+                <form id="signupForm" class="space-y-5 hidden-form" onsubmit="handleSignup(event)">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="signupFirstName" placeholder="First" class="input-fancy px-4 py-3" required>
+                        <input type="text" id="signupLastName" placeholder="Last" class="input-fancy px-4 py-3" required>
+                    </div>
+                    <div class="relative">
+                        <i data-lucide="mail" class="absolute left-4 top-4 w-5 h-5 text-emerald-300"></i>
+                        <input type="email" id="signupEmail" placeholder="Email" class="input-fancy pl-12" required>
+                    </div>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-4 top-4 w-5 h-5 text-emerald-300"></i>
+                        <input type="password" id="signupPassword" placeholder="Password" class="input-fancy pl-12" required>
+                    </div>
+                    <button type="submit" class="btn-modal"><i data-lucide="user-plus" class="w-5 h-5 inline mr-2"></i>Create account</button>
+                </form>
+
+                <!-- clean toggle -->
+                <div class="toggle-plain">
+                    <span id="toggleQuestion" class="text-white/80">Don't have an account?</span>
+                    <button id="toggleAuthBtn">Sign Up <i data-lucide="arrow-right" class="w-4 h-4 inline"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGE (Main App) -->
+    <div id="dashboard-page">
+        <nav class="glass-nav flex justify-between items-center px-8 py-4 sticky top-0 z-50">
+            <div class="flex items-center gap-3 text-white font-bold text-xl">
+                <div class="bg-white/20 p-2 rounded-xl pulse-animation">
+                    <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Greenovators</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-white/80 text-sm" id="welcomeUser">Welcome, User!</span>
+                <button onclick="logout()" class="bg-white/20 text-white px-4 py-2 rounded-full text-sm hover:bg-white/30 transition">
+                    Logout
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-6xl mx-auto mt-10 px-6 pb-20">
+            <header class="mb-12 text-center">
+                <h1 class="text-5xl font-extrabold text-white mb-3 float-animation">
+                    Welcome Back! 🌱
+                </h1>
+                <p class="text-white/80 text-xl">Track your waste management impact and use our AI tools</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div onclick="openAI()" class="dashboard-card group">
+                    <div class="bg-gradient-to-br from-blue-400 to-purple-500 p-4 rounded-2xl inline-block mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="bot" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">AI Chatbot</h3>
+                    <p class="text-gray-600 text-sm">Get instant waste management advice</p>
+                </div>
+
+                <div onclick="openImageScreen()" class="dashboard-card group">
+                    <div class="bg-gradient-to-br from-green-400 to-teal-500 p-4 rounded-2xl inline-block mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="camera" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Image Classify</h3>
+                    <p class="text-gray-600 text-sm">Upload photo to identify waste type</p>
+                </div>
+
+                <div onclick="openManualEntryScreen()" class="dashboard-card group">
+                    <div class="bg-gradient-to-br from-orange-400 to-red-500 p-4 rounded-2xl inline-block mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="file-text" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Manual Entry</h3>
+                    <p class="text-gray-600 text-sm">Log your waste manually</p>
+                </div>
+
+                <div onclick="openReportsScreen()" class="dashboard-card group">
+                    <div class="bg-gradient-to-br from-pink-400 to-rose-500 p-4 rounded-2xl inline-block mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="bar-chart-3" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Reports</h3>
+                    <p class="text-gray-600 text-sm">View your waste management history</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="stat-card">
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Total Reports</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-4xl font-bold text-gray-800" id="totalReportsCount">0</span>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Total Waste Tracked</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-4xl font-bold text-gray-800" id="totalWasteKg">0.0 kg</span>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i data-lucide="recycle" class="w-6 h-6 text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Eco Credits</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-4xl font-bold text-gray-800" id="ecoCredits">0</span>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i data-lucide="award" class="w-6 h-6 text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-8">
+                <h3 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i data-lucide="clock" class="w-6 h-6"></i>
+                    Recent Waste Reports
+                </h3>
+                <div id="recentReportsList" class="space-y-3 max-h-80 overflow-y-auto pr-2">
+                    <p class="text-white/70 text-center py-8">No reports yet. Start by adding a report!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- CHATBOT SCREEN -->
+    <div id="chatbot-screen">
+        <header class="glass-nav flex items-center px-6 py-4 sticky top-0 z-10">
+            <button onclick="closeAI()" class="mr-4 text-white hover:bg-white/20 p-2 rounded-full transition">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-lg">
+                    <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="font-bold text-white text-lg">AI Waste Assistant</h2>
+            </div>
+            <button onclick="clearChat()" class="ml-auto bg-white/20 text-white px-4 py-2 rounded-full text-sm hover:bg-white/30 transition flex items-center gap-2">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Clear Chat
+            </button>
+        </header>
+
+        <div id="chat-box" class="chat-messages">
+            <div class="bot-bubble">
+                👋 Hello! I am your AI Waste Assistant. I can answer any question about waste management, recycling, composting, and environmental tips. How can I help you today?
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2 px-4">
+                <div class="chip" onclick="quickAsk('What are the different types of waste?')">🗑️ Waste Types</div>
+                <div class="chip" onclick="quickAsk('How to recycle plastic bottles?')">♻️ Plastic Recycling</div>
+                <div class="chip" onclick="quickAsk('How to start composting at home?')">🌱 Home Composting</div>
+                <div class="chip" onclick="quickAsk('What is e-waste and how to dispose it?')">📱 E-waste</div>
+                <div class="chip" onclick="quickAsk('What are the bin colors meaning?')">🎨 Bin Colors</div>
+                <div class="chip" onclick="quickAsk('How to reduce waste at home?')">🏠 Waste Reduction</div>
+                <div class="chip" onclick="quickAsk('Is glass recyclable?')">🥃 Glass Recycling</div>
+                <div class="chip" onclick="quickAsk('What items are not recyclable?')">🚫 Non-recyclable</div>
+            </div>
+        </div>
+
+        <div class="p-4 glass-card fixed bottom-0 w-full flex gap-2">
+            <input type="text" id="ai-input" placeholder="Ask me anything about waste management..." 
+                   class="flex-1 bg-white/10 border border-white/20 rounded-full px-6 py-3 outline-none focus:border-white text-white placeholder-white/50">
+            <button onclick="handleSend()" class="bg-white text-purple-600 p-3 rounded-full hover:bg-white/90 transition shadow-lg">
+                <i data-lucide="send" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- IMAGE CLASSIFICATION SCREEN -->
+    <div id="image-screen">
+        <header class="glass-nav flex items-center px-6 py-4 sticky top-0 z-10">
+            <button onclick="closeImageScreen()" class="mr-4 text-white hover:bg-white/20 p-2 rounded-full transition">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-lg">
+                    <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="font-bold text-white text-lg">Waste Classifier</h2>
+            </div>
+        </header>
+
+        <div class="p-6 max-w-xl mx-auto">
+            <p class="text-white/80 mb-6 text-center text-lg">Upload or choose a sample to identify waste type</p>
+            
+            <div class="image-grid">
+                <img src="https://images.pexels.com/photos/5591657/pexels-photo-5591657.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="plastic bottle" class="sample-img" onclick="classifySample('plastic bottle')" title="Plastic Bottle">
+                <img src="https://images.pexels.com/photos/5591663/pexels-photo-5591663.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="banana peel" class="sample-img" onclick="classifySample('banana peel')" title="Banana Peel">
+                <img src="https://images.pexels.com/photos/4217409/pexels-photo-4217409.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="old phone" class="sample-img" onclick="classifySample('old phone')" title="E-waste">
+                <img src="https://images.pexels.com/photos/6941096/pexels-photo-6941096.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="newspaper" class="sample-img" onclick="classifySample('newspaper')" title="Paper">
+                <img src="https://images.pexels.com/photos/5591665/pexels-photo-5591665.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="glass bottle" class="sample-img" onclick="classifySample('glass bottle')" title="Glass">
+                <img src="https://images.pexels.com/photos/6005417/pexels-photo-6005417.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="aluminum can" class="sample-img" onclick="classifySample('aluminum can')" title="Aluminum">
+            </div>
+            
+            <div class="upload-area mt-8">
+                <i data-lucide="upload-cloud" class="w-16 h-16 text-white mx-auto mb-4"></i>
+                <p class="text-white text-lg mb-4">Drag & drop or click to browse</p>
+                <input type="file" id="imageUpload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                <button onclick="document.getElementById('imageUpload').click()" class="bg-white text-purple-600 px-8 py-3 rounded-full font-semibold hover:bg-white/90 transition shadow-lg">
+                    Choose Image
+                </button>
+            </div>
+
+            <div id="imageResultArea" class="mt-8 hidden">
+                <div class="glass-card p-6">
+                    <img id="preview-img" src="" alt="preview" class="mx-auto rounded-xl max-h-56 object-contain">
+                    <div id="classifyResult" class="mt-4 p-4 rounded-xl bg-white/20 text-white text-center font-medium"></div>
+                    <div id="wasteAdvice" class="mt-3 text-white/80 text-center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANUAL ENTRY SCREEN -->
+    <div id="manual-entry-screen">
+        <header class="glass-nav flex items-center px-6 py-4 sticky top-0 z-10">
+            <button onclick="closeManualEntryScreen()" class="mr-4 text-white hover:bg-white/20 p-2 rounded-full transition">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-lg">
+                    <i data-lucide="file-text" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="font-bold text-white text-lg">Manual Waste Entry</h2>
+            </div>
+        </header>
+
+        <div class="p-6 max-w-xl mx-auto">
+            <div class="glass-card p-8">
+                <h3 class="text-2xl font-bold text-white mb-6">Add Waste Report</h3>
+                
+                <form id="manualEntryForm" onsubmit="submitManualReport(event)">
+                    <div class="mb-5">
+                        <label class="block text-white/80 font-medium mb-2">Waste Type</label>
+                        <input type="text" id="wasteType" placeholder="e.g., Plastic Bottle" class="form-input" required>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="block text-white/80 font-medium mb-2">Category</label>
+                        <select id="wasteCategory" class="form-input" required>
+                            <option value="" disabled selected>Select category</option>
+                            <option value="recyclable (plastic)">♻️ Recyclable (Plastic)</option>
+                            <option value="organic / compostable">🌱 Organic / Compostable</option>
+                            <option value="e-waste">📱 E-waste</option>
+                            <option value="recyclable (paper)">📄 Recyclable (Paper)</option>
+                            <option value="recyclable (glass)">🥃 Recyclable (Glass)</option>
+                            <option value="recyclable (metal)">🥫 Recyclable (Metal)</option>
+                            <option value="general waste">🗑️ General Waste</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="block text-white/80 font-medium mb-2">Weight (kg)</label>
+                        <input type="number" step="0.01" min="0" id="wasteWeight" placeholder="0.5" class="form-input" required>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-white/80 font-medium mb-2">Date</label>
+                        <input type="date" id="wasteDate" class="form-input" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn w-full flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        Submit Report
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORTS SCREEN -->
+    <div id="reports-screen">
+        <header class="glass-nav flex items-center px-6 py-4 sticky top-0 z-10">
+            <button onclick="closeReportsScreen()" class="mr-4 text-white hover:bg-white/20 p-2 rounded-full transition">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-lg">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="font-bold text-white text-lg">Waste Reports</h2>
+            </div>
+            <button onclick="openManualEntryScreenFromReports()" class="ml-auto bg-white text-purple-600 px-5 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> New Report
+            </button>
+        </header>
+
+        <div class="p-6 max-w-3xl mx-auto">
+            <div>
+                <h3 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i data-lucide="history" class="w-6 h-6"></i>
+                    Report History
+                </h3>
+                
+                <div id="reportsHistoryContainer" class="space-y-3">
+                    <!-- Reports will be dynamically injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Initialize EmailJS with your public API key
+        (function() {
+            emailjs.init("cy-MTIRz0bv3LFTGo");
+            console.log("EmailJS initialized successfully");
+        })();
+
+        // User database (localStorage)
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+        // Screen elements
+        const loginPage = document.getElementById('login-page');
+        const dash = document.getElementById('dashboard-page');
+        const aiScreen = document.getElementById('chatbot-screen');
+        const imageScreen = document.getElementById('image-screen');
+        const reportsScreen = document.getElementById('reports-screen');
+        const manualEntryScreen = document.getElementById('manual-entry-screen');
+        
+        const chatBox = document.getElementById('chat-box');
+        const aiInput = document.getElementById('ai-input');
+
+        // Modal elements
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const headerLogin = document.getElementById('headerLoginBtn');
+        const getStarted = document.getElementById('getStartedBtn');
+        const joinToday = document.getElementById('joinTodayBtn');
+
+        // In-memory report storage
+        let wasteReports = JSON.parse(localStorage.getItem('wasteReports')) || [];
+
+        // Admin emails for notifications - UPDATED with both emails
+        const ADMIN_EMAILS = ['ptmstudio9@gmail.com', 'utkarshgkp982@gmail.com'];
+        const TEMPLATE_ID = 'template_3s78jkx';
+
+        // Check if user is already logged in
+        if (currentUser) {
+            loginPage.style.display = 'none';
+            dash.style.display = 'block';
+            document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.name}!`;
+        } else {
+            loginPage.style.display = 'block';
+            dash.style.display = 'none';
+        }
+
+        // Modal functions
+        function openModal() { 
+            modalOverlay.style.display = 'flex'; 
+            document.body.style.overflow = 'hidden'; 
+        }
+        
+        function closeModal() { 
+            modalOverlay.style.display = 'none'; 
+            document.body.style.overflow = 'auto'; 
+        }
+
+        headerLogin.addEventListener('click', openModal);
+        getStarted.addEventListener('click', openModal);
+        joinToday.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        
+        modalOverlay.addEventListener('click', (e) => { 
+            if (e.target === modalOverlay) closeModal(); 
+        });
+        
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === 'Escape' && modalOverlay.style.display === 'flex') closeModal(); 
+        });
+
+        // Toggle between login/signup
+        let isLogin = true;
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSub = document.getElementById('modalSub');
+        const toggleQuestion = document.getElementById('toggleQuestion');
+        const toggleBtn = document.getElementById('toggleAuthBtn');
+
+        function toggleAuthMode() {
+            isLogin = !isLogin;
+            if (isLogin) {
+                loginForm.classList.remove('hidden-form');
+                signupForm.classList.add('hidden-form');
+                modalTitle.innerText = '🌱 Welcome Back';
+                modalSub.innerText = 'secure · green · future';
+                toggleQuestion.innerText = "Don't have an account?";
+                toggleBtn.innerHTML = 'Sign Up <i data-lucide="arrow-right" class="w-4 h-4 inline"></i>';
+            } else {
+                loginForm.classList.add('hidden-form');
+                signupForm.classList.remove('hidden-form');
+                modalTitle.innerText = '✨ Create Account';
+                modalSub.innerText = 'join the Greenovators';
+                toggleQuestion.innerText = 'Already a member?';
+                toggleBtn.innerHTML = 'Log in <i data-lucide="log-in" class="w-4 h-4 inline"></i>';
+            }
+            lucide.createIcons();
+        }
+        
+        toggleBtn.addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            toggleAuthMode(); 
+        });
+
+        // Send Email Notification to multiple emails
+        async function sendEmailNotification(type, data) {
+            try {
+                const timestamp = new Date().toLocaleString();
+                
+                // Send to each admin email
+                for (const adminEmail of ADMIN_EMAILS) {
+                    const emailData = {
+                        to_email: adminEmail,
+                        from_name: 'Greenovators Website',
+                        subject: `New ${type} Activity - Greenovators`,
+                        message: createEmailMessage(type, data),
+                        reply_to: 'noreply@greenovators.com',
+                        activity_type: type,
+                        activity_time: timestamp,
+                        user_name: currentUser ? currentUser.name : 'Guest',
+                        user_email: currentUser ? currentUser.email : 'Not logged in'
+                    };
+
+                    // Send email using EmailJS with your template ID
+                    const response = await emailjs.send('default_service', TEMPLATE_ID, emailData);
+                    console.log(`Email notification sent to ${adminEmail}:`, response);
+                }
+                
+                // Show in-app notification
+                showMessage(`📧 Notifications sent to ${ADMIN_EMAILS.length} admins`, 'info');
+            } catch (error) {
+                console.error('Email sending failed:', error);
+                // Still show success to user but log error
+                showMessage(`✅ Activity recorded`, 'success');
+            }
+        }
+
+        // Create email message
+        function createEmailMessage(type, data) {
+            const timestamp = new Date().toLocaleString();
+            
+            let message = `🌱 GREENOVATORS ACTIVITY REPORT 🌱\n\n`;
+            message += `📅 Time: ${timestamp}\n`;
+            message += `📋 Activity Type: ${type}\n`;
+            message += `👤 User: ${currentUser ? currentUser.name + ' (' + currentUser.email + ')' : 'Guest'}\n`;
+            message += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+            message += `🔍 DETAILS:\n`;
+
+            switch(type) {
+                case 'Sign Up':
+                    message += `✨ New User Registration\n`;
+                    message += `├─ Name: ${data.name}\n`;
+                    message += `├─ Email: ${data.email}\n`;
+                    message += `└─ User ID: ${data.id}\n`;
+                    break;
+                    
+                case 'Login':
+                    message += `🔐 User Login\n`;
+                    message += `├─ Name: ${data.name}\n`;
+                    message += `├─ Email: ${data.email}\n`;
+                    message += `└─ Time: ${data.time}\n`;
+                    break;
+                    
+                case 'Logout':
+                    message += `🚪 User Logout\n`;
+                    message += `├─ Name: ${data.name}\n`;
+                    message += `├─ Email: ${data.email}\n`;
+                    message += `└─ Session Duration: ${data.duration}\n`;
+                    break;
+                    
+                case 'Waste Report':
+                    message += `🗑️ New Waste Report Submitted\n`;
+                    message += `├─ Waste Type: ${data.type}\n`;
+                    message += `├─ Category: ${data.category}\n`;
+                    message += `├─ Weight: ${data.weight} kg\n`;
+                    message += `├─ Date: ${data.date}\n`;
+                    message += `├─ Eco Credits: ${data.credits}\n`;
+                    message += `└─ Report ID: ${data.id}\n`;
+                    break;
+                    
+                case 'Image Classification':
+                    message += `📸 Image Classification Performed\n`;
+                    message += `├─ Image: ${data.imageName}\n`;
+                    message += `├─ Detected Category: ${data.category}\n`;
+                    message += `└─ Advice: ${data.advice}\n`;
+                    break;
+                    
+                case 'Chatbot Query':
+                    message += `💬 Chatbot Interaction\n`;
+                    message += `├─ User Query: ${data.query}\n`;
+                    message += `├─ Bot Response: ${data.response}\n`;
+                    message += `└─ Response Time: ${data.responseTime}\n`;
+                    break;
+                    
+                case 'Dashboard Visit':
+                    message += `📊 Dashboard Activity\n`;
+                    message += `├─ Page: ${data.page}\n`;
+                    message += `├─ Action: ${data.action}\n`;
+                    message += `└─ Stats: ${data.stats}\n`;
+                    break;
+                    
+                default:
+                    message += JSON.stringify(data, null, 2);
+            }
+
+            message += `\n\n━━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `💻 System Information:\n`;
+            message += `├─ Browser: ${navigator.userAgent}\n`;
+            message += `├─ Platform: ${navigator.platform}\n`;
+            message += `└─ Screen: ${screen.width}x${screen.height}\n`;
+            message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `🌍 Thank you for using Greenovators!\n`;
+
+            return message;
+        }
+
+        // Handle Signup with Email Notification
+        function handleSignup(event) {
+            event.preventDefault();
+            
+            const firstName = document.getElementById('signupFirstName').value;
+            const lastName = document.getElementById('signupLastName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            // Check if user already exists
+            if (users.find(u => u.email === email)) {
+                showMessage('User already exists! Please login.', 'error');
+                return;
+            }
+
+            // Create new user
+            const newUser = {
+                id: Date.now(),
+                name: firstName + ' ' + lastName,
+                email: email,
+                password: password,
+                createdAt: new Date().toISOString()
+            };
+
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Send email notification for signup
+            sendEmailNotification('Sign Up', {
+                name: newUser.name,
+                email: newUser.email,
+                id: newUser.id
+            });
+            
+            showMessage('Account created successfully! Please login.', 'success');
+            
+            // Switch to login mode
+            if (!isLogin) toggleAuthMode();
+        }
+
+        // Handle Login with Email Notification
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Find user
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                // Send email notification for login
+                sendEmailNotification('Login', {
+                    name: user.name,
+                    email: user.email,
+                    time: new Date().toLocaleString()
+                });
+                
+                closeModal();
+                loginPage.style.display = 'none';
+                dash.style.display = 'block';
+                document.getElementById('welcomeUser').textContent = `Welcome, ${user.name}!`;
+                
+                showMessage('Login successful!', 'success');
+            } else {
+                showMessage('Invalid email or password!', 'error');
+            }
+        }
+
+        // Logout with Email Notification
+        function logout() {
+            // Send email notification for logout
+            if (currentUser) {
+                sendEmailNotification('Logout', {
+                    name: currentUser.name,
+                    email: currentUser.email,
+                    duration: 'Session ended'
+                });
+            }
+            
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            dash.style.display = 'none';
+            loginPage.style.display = 'block';
+            showMessage('Logged out successfully!', 'success');
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `success-toast ${type === 'error' ? 'bg-red-500' : type === 'info' ? 'bg-blue-500' : 'bg-green-500'}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Manual Entry Screen functions
+        function openManualEntryScreen() {
+            dash.style.display = 'none';
+            manualEntryScreen.style.display = 'block';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('wasteDate').value = today;
+            lucide.createIcons();
+        }
+
+        function closeManualEntryScreen() {
+            manualEntryScreen.style.display = 'none';
+            dash.style.display = 'block';
+            lucide.createIcons();
+        }
+
+        function openManualEntryScreenFromReports() {
+            reportsScreen.style.display = 'none';
+            manualEntryScreen.style.display = 'block';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('wasteDate').value = today;
+            lucide.createIcons();
+        }
+
+        // Submit form with Email Notification
+        function submitManualReport(event) {
+            event.preventDefault();
+            
+            const type = document.getElementById('wasteType').value;
+            const category = document.getElementById('wasteCategory').value;
+            const weight = parseFloat(document.getElementById('wasteWeight').value);
+            const date = document.getElementById('wasteDate').value;
+            
+            const credits = Math.floor(Math.random() * 10) + 1;
+            
+            const newReport = {
+                id: Date.now(),
+                type: type,
+                category: category,
+                weight: weight.toFixed(2),
+                date: new Date(date).toLocaleDateString('en-IN'),
+                credits: credits,
+                userId: currentUser?.id,
+                userName: currentUser?.name,
+                timestamp: new Date().toISOString()
+            };
+            
+            wasteReports.push(newReport);
+            localStorage.setItem('wasteReports', JSON.stringify(wasteReports));
+            
+            document.getElementById('manualEntryForm').reset();
+            
+            // Send email notification for waste report
+            sendEmailNotification('Waste Report', newReport);
+            
+            updateDashboardStats();
+            renderReportsHistory();
+            updateRecentReportsOnDashboard();
+            
+            manualEntryScreen.style.display = 'none';
+            dash.style.display = 'block';
+            
+            showMessage('Report submitted successfully!', 'success');
+        }
+
+        // Reports Screen functions
+        function openReportsScreen() {
+            dash.style.display = 'none';
+            reportsScreen.style.display = 'block';
+            renderReportsHistory();
+            lucide.createIcons();
+            
+            // Send email notification for reports view
+            sendEmailNotification('Dashboard Visit', {
+                page: 'Reports',
+                action: 'View Reports',
+                stats: `Total Reports: ${wasteReports.length}`
+            });
+        }
+
+        function closeReportsScreen() {
+            reportsScreen.style.display = 'none';
+            dash.style.display = 'block';
+            lucide.createIcons();
+        }
+
+        // Render reports history
+        function renderReportsHistory() {
+            const container = document.getElementById('reportsHistoryContainer');
+            if (!container) return;
+
+            if (wasteReports.length === 0) {
+                container.innerHTML = `<div class="glass-card p-10 text-center">
+                    <i data-lucide="file-text" class="w-16 h-16 text-white/50 mx-auto mb-4"></i>
+                    <p class="text-white/70 text-lg">No reports yet. Create your first report!</p>
+                </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = '';
+            wasteReports.slice().reverse().forEach(report => {
+                html += `<div class="report-entry">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-bold text-gray-800">${report.type}</span>
+                            <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-3 py-1 rounded-full">${report.category}</span>
+                        </div>
+                        <span class="text-sm text-gray-500">${report.date}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-gray-600"><i data-lucide="scale" class="w-4 h-4 inline mr-1"></i> ${report.weight} kg</span>
+                        <span class="text-purple-600 font-semibold"><i data-lucide="award" class="w-4 h-4 inline mr-1"></i> ${report.credits} credits</span>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // Update dashboard stats
+        function updateDashboardStats() {
+            document.getElementById('totalReportsCount').innerText = wasteReports.length;
+            const totalKg = wasteReports.reduce((acc, r) => acc + parseFloat(r.weight), 0).toFixed(1);
+            document.getElementById('totalWasteKg').innerText = totalKg + ' kg';
+            const totalCredits = wasteReports.reduce((acc, r) => acc + r.credits, 0);
+            document.getElementById('ecoCredits').innerText = totalCredits;
+        }
+
+        // Update recent reports on dashboard
+        function updateRecentReportsOnDashboard() {
+            const container = document.getElementById('recentReportsList');
+            if (!container) return;
+            
+            if (wasteReports.length === 0) {
+                container.innerHTML = '<p class="text-white/70 text-center py-4">No reports yet. Start by adding a report!</p>';
+                return;
+            }
+            
+            let html = '';
+            wasteReports.slice(-5).reverse().forEach(report => {
+                html += `<div class="bg-white/20 backdrop-blur-sm p-4 rounded-xl flex justify-between items-center">
+                    <span class="font-medium text-white">${report.type}</span>
+                    <span class="text-white/80">${report.weight} kg</span>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // Image classification functions with Email Notification
+        function openImageScreen() {
+            dash.style.display = 'none';
+            imageScreen.style.display = 'block';
+            document.getElementById('imageResultArea').classList.add('hidden');
+            document.getElementById('imageUpload').value = '';
+            lucide.createIcons();
+        }
+
+        function closeImageScreen() {
+            imageScreen.style.display = 'none';
+            dash.style.display = 'block';
+            lucide.createIcons();
+        }
+
+        function classifyWaste(description) {
+            const text = description.toLowerCase();
+            if (text.includes('plastic') || (text.includes('bottle') && !text.includes('glass'))) {
+                return { waste: true, category: 'Recyclable (Plastic)', advice: '♻️ Rinse and put in blue bin.' };
+            } else if (text.includes('banana') || text.includes('peel') || text.includes('apple') || text.includes('organic') || text.includes('food')) {
+                return { waste: true, category: 'Organic / Compostable', advice: '🌱 Great for composting! Use green bin.' };
+            } else if (text.includes('phone') || text.includes('battery') || text.includes('electronic') || text.includes('laptop') || text.includes('e-waste')) {
+                return { waste: true, category: 'E-waste', advice: '⚠️ Take to authorized e-waste center. Do not trash.' };
+            } else if (text.includes('paper') || text.includes('newspaper') || text.includes('cardboard') || text.includes('magazine')) {
+                return { waste: true, category: 'Recyclable (Paper)', advice: '📄 Keep dry and place in blue bin.' };
+            } else if (text.includes('glass') || text.includes('jar')) {
+                return { waste: true, category: 'Recyclable (Glass)', advice: '🥃 Rinse carefully; blue bin if allowed.' };
+            } else if (text.includes('can') || text.includes('aluminum') || text.includes('tin') || text.includes('metal')) {
+                return { waste: true, category: 'Recyclable (Metal)', advice: '🥫 Rinse and recycle.' };
+            } else {
+                return { waste: true, category: 'General Waste', advice: '🗑️ Use black bin. For better sorting, describe more.' };
+            }
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview-img');
+                    preview.src = e.target.result;
+                    
+                    let description = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ');
+                    if (!description || description === 'image' || description === 'photo' || description === 'img') {
+                        description = "uploaded image";
+                    }
+                    
+                    const result = classifyWaste(description + ' ' + file.type);
+                    
+                    document.getElementById('imageResultArea').classList.remove('hidden');
+                    const resultDiv = document.getElementById('classifyResult');
+                    const adviceDiv = document.getElementById('wasteAdvice');
+                    
+                    resultDiv.innerHTML = `✅ Detected: <strong>${result.category}</strong>`;
+                    adviceDiv.innerText = result.advice;
+                    
+                    // Send email notification for image classification
+                    sendEmailNotification('Image Classification', {
+                        imageName: file.name,
+                        category: result.category,
+                        advice: result.advice,
+                        description: description
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function classifySample(altText) {
+            const pexelsMap = {
+                'plastic bottle': 'https://images.pexels.com/photos/5591657/pexels-photo-5591657.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop',
+                'banana peel': 'https://images.pexels.com/photos/5591663/pexels-photo-5591663.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop',
+                'old phone': 'https://images.pexels.com/photos/4217409/pexels-photo-4217409.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop',
+                'newspaper': 'https://images.pexels.com/photos/6941096/pexels-photo-6941096.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop',
+                'glass bottle': 'https://images.pexels.com/photos/5591665/pexels-photo-5591665.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop',
+                'aluminum can': 'https://images.pexels.com/photos/6005417/pexels-photo-6005417.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop'
+            };
+            const fallback = 'https://images.pexels.com/photos/6941096/pexels-photo-6941096.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop';
+            
+            const preview = document.getElementById('preview-img');
+            preview.src = pexelsMap[altText] || fallback;
+            
+            const result = classifyWaste(altText);
+            document.getElementById('imageResultArea').classList.remove('hidden');
+            const resultDiv = document.getElementById('classifyResult');
+            const adviceDiv = document.getElementById('wasteAdvice');
+            resultDiv.innerHTML = `✅ Sample: <strong>${altText}</strong> → ${result.category}`;
+            adviceDiv.innerText = result.advice;
+            
+            // Send email notification for sample classification
+            sendEmailNotification('Image Classification', {
+                imageName: `Sample: ${altText}`,
+                category: result.category,
+                advice: result.advice,
+                description: altText
+            });
+        }
+
+        // ============ CHATBOT FUNCTIONS ============
+        
+        // Comprehensive knowledge base for waste management
+        const knowledgeBase = {
+            // Greetings
+            "hi": "👋 Hello! I'm your AI Waste Assistant. How can I help you with waste management today?",
+            "hello": "🌟 Hi there! Ready to learn about waste management and recycling?",
+            "hey": "👋 Hey! How can I assist you with environmental questions?",
+            "good morning": "🌅 Good morning! How can I help you make today more eco-friendly?",
+            "good afternoon": "☀️ Good afternoon! Got any waste management questions?",
+            "good evening": "🌆 Good evening! What would you like to know about recycling or composting?",
+            
+            // Waste types and categories
+            "waste types": "🗑️ **Common Waste Types:**\n\n1. **Organic Waste** - Food scraps, garden waste (compostable)\n2. **Recyclable Waste** - Paper, plastic, glass, metal\n3. **Hazardous Waste** - Batteries, chemicals, medical waste\n4. **E-waste** - Electronics, phones, computers\n5. **General Waste** - Non-recyclable items",
+            
+            "types of waste": "🗑️ **Waste Categories:**\n\n• **Wet Waste** (Organic) - Kitchen waste, food scraps\n• **Dry Waste** (Recyclable) - Paper, plastic, metal, glass\n• **Hazardous Waste** - Chemicals, batteries, medical items\n• **E-waste** - Electronic devices and components",
+            
+            // Plastic recycling
+            "plastic": "♻️ **Plastic Recycling Guide:**\n\n• **PET (1)** - Water bottles, soda bottles - Rinse and recycle\n• **HDPE (2)** - Milk jugs, shampoo bottles - Recyclable\n• **PVC (3)** - Pipes, toys - Usually not recyclable\n• **LDPE (4)** - Plastic bags - Special recycling only\n• **PP (5)** - Yogurt containers, straws - Check local rules\n• **PS (6)** - Styrofoam - Not recyclable\n• **Other (7)** - Mixed plastics - Rarely recyclable",
+            
+            "plastic bottles": "♻️ **How to Recycle Plastic Bottles:**\n\n1. Empty the bottle completely\n2. Rinse with water\n3. Remove the cap (recycle separately)\n4. Crush to save space\n5. Place in blue recycling bin\n\nRemember: Clean bottles only!",
+            
+            "plastic bags": "🛍️ **Plastic Bags:**\n\n• Don't put in home recycling bins (they clog machines)\n• Take to grocery store collection points\n• Reuse as many times as possible\n• Better alternative: Use cloth bags",
+            
+            // Composting
+            "compost": "🌱 **Home Composting Guide:**\n\n**What to compost:**\n• Fruit and vegetable scraps\n• Coffee grounds and filters\n• Eggshells\n• Grass clippings and leaves\n• Shredded newspaper\n\n**What NOT to compost:**\n• Meat, fish, or dairy\n• Oily foods\n• Pet waste\n• Diseased plants\n• Weeds with seeds",
+            
+            "composting": "🌱 **Composting Basics:**\n\n**Green materials** (Nitrogen-rich):\n- Food scraps, coffee grounds, fresh grass\n\n**Brown materials** (Carbon-rich):\n- Dry leaves, twigs, paper, cardboard\n\n**Ratio:** Mix 2-3 parts brown to 1 part green\nKeep moist and turn regularly for best results!",
+            
+            "composting tips": "🌱 **Top Composting Tips:**\n\n1. Balance greens and browns\n2. Keep pile moist (like a wrung-out sponge)\n3. Turn every week for aeration\n4. Chop materials into smaller pieces\n5. Bury food scraps to avoid pests\n6. Compost is ready in 2-6 months when dark and crumbly",
+            
+            // E-waste
+            "e-waste": "📱 **E-waste Management:**\n\n**What is e-waste?**\n- Old phones, computers, TVs\n- Batteries and chargers\n- Printers and electronics\n\n**How to dispose:**\n1. Never throw in regular trash\n2. Take to authorized e-waste recyclers\n3. Many brands offer take-back programs\n4. Remove personal data first\n5. Batteries need special handling",
+            
+            "ewaste": "📱 **E-waste Disposal Guide:**\n\n• **Find local e-waste collection centers**\n• **Retailers** like electronics stores often accept old devices\n• **Manufacturer programs** - Many brands recycle their products\n• **Municipal collection events** - Check city website\n\n⚠️ **NEVER** throw electronics in regular bins - they contain toxic materials!",
+            
+            "battery": "🔋 **Battery Disposal:**\n\n• **Regular alkaline batteries** - Can go in trash in some areas\n• **Rechargeable batteries** (NiMH, Li-ion) - Must be recycled\n• **Car batteries** - Take to auto shops or recycling centers\n• **Button cell batteries** - Contain mercury, recycle only\n\nFind battery recycling at electronics stores or hazardous waste facilities!",
+            
+            "batteries": "🔋 **Battery Recycling:**\n\n⚠️ Batteries contain toxic metals and chemicals!\n\n**Where to recycle:**\n• Electronics stores (Best Buy, Staples)\n• Local hazardous waste facilities\n• Battery specialty stores\n• Some municipal recycling centers\n\nStore used batteries in a non-conductive container until recycling!",
+            
+            // Bin colors
+            "bin colors": "🎨 **Bin Color Coding (Standard):**\n\n🟢 **Green Bin** - Organic/Wet waste (food scraps, garden waste)\n🔵 **Blue Bin** - Dry recyclables (paper, plastic, glass, metal)\n🟡 **Yellow Bin** - Medical/Bio-hazardous waste\n⚫ **Black Bin** - General/Residual waste\n🔴 **Red Bin** - Hazardous/E-waste (in some areas)\n\n*Note: Colors may vary by city. Check local guidelines!*",
+            
+            "bin": "🗑️ **Waste Bin Guide:**\n\n• **Green** - Food waste, organic materials\n• **Blue** - Recyclables (paper, plastic, glass, metal)\n• **Black** - Non-recyclable general waste\n• **Red** - Hazardous waste, e-waste\n\nAlways rinse containers before recycling!",
+            
+            "color coding": "🎨 **Standard Waste Color Coding:**\n\n🟢 **GREEN** - Wet/Organic waste\n🔵 **BLUE** - Dry/Recyclable waste\n🟡 **YELLOW** - Medical/Infectious waste\n⚫ **BLACK** - General waste\n🔴 **RED** - Hazardous/E-waste\n\nFollow your local municipality guidelines for exact rules!",
+            
+            // Glass recycling
+            "glass": "🥃 **Glass Recycling:**\n\n✅ **Recyclable glass:**\n- Bottles (soda, beer, wine)\n- Jars (food containers)\n\n❌ **NOT recyclable:**\n- Windows, mirrors\n- Light bulbs\n- Drinking glasses\n- Pyrex/ovenware\n- Ceramics\n\nRinse and remove lids before recycling!",
+            
+            "glass bottles": "🥃 **How to Recycle Glass Bottles:**\n\n1. Empty completely\n2. Rinse with water\n3. Remove caps/lids (recycle separately)\n4. Place in blue recycling bin\n\n⚠️ Don't break glass - it's dangerous for workers!\nDifferent colors (clear, green, brown) can be recycled together.",
+            
+            // Paper recycling
+            "paper": "📄 **Paper Recycling Guide:**\n\n✅ **Recyclable:**\n- Newspaper, magazines\n- Office paper, envelopes\n- Cardboard, paperboard\n- Phone books, catalogs\n\n❌ **NOT recyclable:**\n- Pizza boxes (greasy)\n- Paper towels/napkins\n- Waxed paper\n- Thermal paper (receipts)\n- Shredded paper (check local rules)\n\nKeep paper dry and clean!",
+            
+            "newspaper": "📰 **Newspaper Recycling:**\n\n✅ Newspapers are highly recyclable!\n\n**Tips:**\n• Keep dry - wet paper can't be recycled\n• Remove plastic wrappers\n• Don't worry about staples or small amounts of tape\n• Bundle or place loosely in recycling bin\n\nRecycled newspaper becomes new paper products!",
+            
+            "cardboard": "📦 **Cardboard Recycling:**\n\n✅ **Recyclable:**\n- Shipping boxes\n- Cereal boxes\n- Shoeboxes\n- Paperboard packaging\n\n❌ **NOT recyclable:**\n- Pizza boxes (grease contamination)\n- Wax-coated boxes\n- Wet/damaged cardboard\n\n**Preparation:**\n• Flatten boxes\n• Remove tape and labels\n• Keep dry",
+            
+            // Metal recycling
+            "metal": "🥫 **Metal Recycling:**\n\n✅ **Recyclable metals:**\n- Aluminum cans (soda, beer)\n- Tin/steel cans (food)\n- Aluminum foil (clean)\n- Scrap metal\n\n❌ **NOT recyclable:**\n- Aerosol cans (if not empty)\n- Paint cans (with residue)\n- Metal with hazardous materials\n\n**Tips:**\n• Rinse food containers\n• Labels can stay on\n• Crush cans to save space",
+            
+            "aluminum": "🥫 **Aluminum Can Recycling:**\n\n♻️ Aluminum is 100% recyclable!\n\n**Process:**\n1. Empty the can\n2. Rinse quickly\n3. Place in recycling bin\n4. Can be crushed to save space\n\n**Fun fact:** Recycled aluminum saves 95% energy compared to making new aluminum! A can is recycled and back on shelf in 60 days.",
+            
+            "cans": "🥫 **Recycling Food Cans:**\n\n**Tin-plated steel cans** (soup, vegetables):\n• Empty and rinse\n• Labels can stay on\n• Place in recycling bin\n\n**Aluminum cans** (soda, beer):\n• Same process\n• Highly valuable for recycling\n\n⚠️ Be careful with sharp edges if crushing!",
+            
+            // Organic waste
+            "organic": "🌱 **Organic Waste Management:**\n\n**What is organic waste?**\n- Food scraps\n- Garden waste\n- Leaves and grass\n- Coffee grounds\n\n**Best practices:**\n• Home composting\n• Municipal green bin programs\n• Avoid sending to landfill (produces methane)\n• Use as fertilizer for plants",
+            
+            "food waste": "🍎 **Reducing Food Waste:**\n\n**Tips to reduce:**\n1. Plan meals before shopping\n2. Store food properly\n3. Use leftovers creatively\n4. Compost what you can't eat\n5. Understand expiry dates\n\n**Compost** fruit and vegetable scraps instead of throwing away!",
+            
+            // Hazardous waste
+            "hazardous": "⚠️ **Hazardous Waste:**\n\n**Common items:**\n• Paints and solvents\n• Cleaning chemicals\n• Pesticides and herbicides\n• Motor oil and fluids\n• Batteries\n• Fluorescent bulbs\n• Medical waste\n\n**NEVER** put these in regular trash! Take to hazardous waste collection facilities.",
+            
+            "chemicals": "🧪 **Chemical Waste Disposal:**\n\n**NEVER** pour down drains or trash!\n\n**Safe disposal:**\n• Take to household hazardous waste events\n• Some auto shops accept oil/batteries\n• Paint can be dried and disposed at specific sites\n• Check product labels for disposal instructions\n\nKeep in original containers with labels!",
+            
+            // Waste reduction
+            "reduce waste": "♻️ **How to Reduce Waste:**\n\n**The 5 R's:**\n1. **Refuse** what you don't need\n2. **Reduce** what you use\n3. **Reuse** items when possible\n4. **Recycle** what you can't reuse\n5. **Rot** (compost) organic waste\n\n**Simple tips:**\n• Use reusable bags, bottles, containers\n• Buy in bulk to reduce packaging\n• Choose products with less packaging\n• Repair instead of replace",
+            
+            "waste reduction": "🏠 **Waste Reduction at Home:**\n\n**Kitchen:**\n• Compost food scraps\n• Use reusable containers\n• Avoid single-use items\n\n**Bathroom:**\n• Refillable soap dispensers\n• Bamboo toothbrushes\n• Bar soap instead of liquid\n\n**Shopping:**\n• Bring your own bags\n• Choose minimal packaging\n• Buy secondhand when possible",
+            
+            "zero waste": "🌍 **Zero Waste Living:**\n\n**Principles:**\n• Design out waste\n• Keep materials in use\n• Regenerate natural systems\n\n**Getting started:**\n1. Carry reusable items\n2. Shop package-free where possible\n3. Compost organics\n4. Recycle properly\n5. Choose quality items that last\n\nSmall steps make a big difference!",
+            
+            // Recycling rules
+            "recycling rules": "♻️ **Basic Recycling Rules:**\n\n✅ **DO:**\n• Empty and rinse containers\n• Keep items loose (no plastic bags)\n• Flatten cardboard boxes\n• Check local guidelines\n\n❌ **DON'T:**\n• Put recyclables in plastic bags\n• Include greasy pizza boxes\n• Recycle hazardous waste\n• Wish-cycle (putting non-recyclables hoping they'll be recycled)\n\n**When in doubt, check it out!**",
+            
+            "recycling": "♻️ **Recycling 101:**\n\n**What happens to recyclables?**\n1. Sorted at facilities\n2. Cleaned and processed\n3. Made into new products\n\n**Common recyclables:**\n• Paper and cardboard\n• Plastic bottles (#1 & #2)\n• Glass bottles and jars\n• Aluminum and steel cans\n\n**Benefits:**\n• Saves energy\n• Conserves resources\n• Reduces landfill waste\n• Creates jobs",
+            
+            // Specific items
+            "pizza box": "🍕 **Pizza Box Recycling:**\n\n❌ **NOT recyclable** if greasy!\n\n**Why?** Grease contaminates paper fibers.\n\n**Options:**\n• Tear off clean top for recycling\n• Compost greasy parts if possible\n• Put in general waste if contaminated\n\nAlways check with your local recycler!",
+            
+            "styrofoam": "📦 **Styrofoam (Polystyrene) Recycling:**\n\n❌ Most curbside programs don't accept it\n\n**What to do:**\n• Check for special drop-off locations\n• Some shipping stores accept for reuse\n• Avoid when possible\n\n**Alternatives:**\n• Biodegradable packaging\n• Paper-based materials\n• Reusable containers",
+            
+            "light bulbs": "💡 **Light Bulb Disposal:**\n\n**Incandescent/LED:**\n• Can go in regular trash (check locally)\n\n**CFL bulbs:**\n• Contain mercury - RECYCLE ONLY\n• Take to hardware stores or hazmat facilities\n\n**Fluorescent tubes:**\n• Hazardous waste - special recycling required\n\nNever break CFLs - they release mercury vapor!",
+            
+            // Environmental facts
+            "facts": "🌍 **Waste Management Facts:**\n\n• India generates 62 million tons of waste annually\n• Only 30% of waste is recycled in India\n• One plastic bottle takes 450+ years to decompose\n• Recycling one aluminum can saves enough energy to run a TV for 3 hours\n• Food waste in landfills produces methane (25x worse than CO2)\n• E-waste is the fastest growing waste stream globally",
+            
+            "statistics": "📊 **Waste Statistics:**\n\n**Global:**\n• 2.01 billion tons of municipal waste generated yearly\n• At least 33% not managed safely\n\n**India:**\n• 62M tons waste/year\n• 9.46M tons plastic waste\n• 50M tons e-waste globally\n• 70% of waste goes to landfills\n\n**Recycling saves:**\n• 95% energy for aluminum\n• 70% energy for plastic\n• 60% energy for steel",
+            
+            // Help and about
+            "help": "🆘 **I can help with:**\n\n♻️ Recycling guidelines\n🗑️ Waste types and sorting\n🌱 Composting tips\n📱 E-waste disposal\n🎨 Bin color meanings\n🏠 Waste reduction tips\n❓ Any waste management question!\n\nJust ask me anything!",
+            
+            "about": "🤖 **About Greenovators AI Assistant:**\n\nI'm your waste management expert! I can answer questions about:\n• Recycling rules and guidelines\n• Composting methods\n• E-waste disposal\n• Waste reduction strategies\n• Environmental impact\n• Local disposal options\n\nPowered by Greenovators - making waste management smarter!",
+            
+            // Default responses for unknown queries
+            "default": "🌍 Thanks for your question! While I don't have specific information about that, here are some general waste management tips:\n\n• Always separate wet and dry waste\n• Rinse containers before recycling\n• Never mix hazardous waste with regular trash\n• Compost organic materials when possible\n• Check with your local municipality for specific rules\n\nCan I help you with something more specific about recycling, composting, or waste reduction?"
+        };
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatBox.appendChild(typingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        // Get best response based on keywords
+        function getResponse(input) {
+            const text = input.toLowerCase().trim();
+            
+            // Check for exact matches first
+            if (knowledgeBase[text]) return knowledgeBase[text];
+            
+            // Check for greetings
+            if (text.match(/^(hi|hello|hey|hola|namaste|greetings)/i)) {
+                return knowledgeBase["hi"];
+            }
+            
+            // Check for keywords in the knowledge base
+            let bestMatch = null;
+            let highestScore = 0;
+            
+            for (let key in knowledgeBase) {
+                if (key === "default") continue;
+                
+                const keyWords = key.toLowerCase().split(' ');
+                let score = 0;
+                
+                for (let word of keyWords) {
+                    if (word.length > 2 && text.includes(word)) {
+                        score += 2;
+                    }
+                }
+                
+                // Also check for phrases
+                if (text.includes(key)) {
+                    score += 5;
+                }
+                
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = key;
+                }
+            }
+            
+            // Return best match or default response
+            if (bestMatch && highestScore > 1) {
+                return knowledgeBase[bestMatch];
+            }
+            
+            // Check for question patterns
+            if (text.includes('?')) {
+                if (text.includes('how to recycle')) {
+                    return "♻️ **Recycling Guide:**\n\n1. Check if item is recyclable\n2. Empty and rinse containers\n3. Remove caps/lids\n4. Place in correct bin\n5. Keep items loose (no plastic bags)\n\nFor specific items, ask me directly!";
+                }
+                if (text.includes('what is')) {
+                    if (text.includes('compost')) return knowledgeBase["compost"];
+                    if (text.includes('ewaste') || text.includes('e-waste')) return knowledgeBase["e-waste"];
+                    if (text.includes('recycle')) return knowledgeBase["recycling"];
+                }
+            }
+            
+            // Default response
+            return knowledgeBase["default"];
+        }
+
+        // Clear chat
+        function clearChat() {
+            chatBox.innerHTML = `
+                <div class="bot-bubble">
+                    👋 Chat cleared! I'm still here to help with any waste management questions. How can I assist you today?
+                </div>
+                <div class="flex flex-wrap gap-2 mt-2 px-4">
+                    <div class="chip" onclick="quickAsk('What are the different types of waste?')">🗑️ Waste Types</div>
+                    <div class="chip" onclick="quickAsk('How to recycle plastic bottles?')">♻️ Plastic Recycling</div>
+                    <div class="chip" onclick="quickAsk('How to start composting at home?')">🌱 Home Composting</div>
+                    <div class="chip" onclick="quickAsk('What is e-waste and how to dispose it?')">📱 E-waste</div>
+                </div>
+            `;
+        }
+
+        // Handle send message with Email Notification
+        function handleSend() {
+            const val = aiInput.value.trim();
+            if(!val) return;
+
+            // Add user message
+            appendMsg(val, 'user-bubble');
+            aiInput.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate AI thinking
+            setTimeout(() => {
+                hideTypingIndicator();
+                const reply = getResponse(val);
+                
+                // Check if reply contains markdown-style bold
+                if (reply.includes('**')) {
+                    // Convert markdown to HTML
+                    const formattedReply = reply.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    appendMsg(formattedReply, 'bot-bubble');
+                } else {
+                    appendMsg(reply, 'bot-bubble');
+                }
+                
+                // Send email notification for chatbot query
+                sendEmailNotification('Chatbot Query', {
+                    query: val,
+                    response: reply.substring(0, 100) + '...', // First 100 chars
+                    responseTime: '~1 second'
+                });
+            }, 1000 + Math.random() * 1000); // Random delay 1-2 seconds
+        }
+
+        // Append message to chat
+        function appendMsg(text, className) {
+            const div = document.createElement('div');
+            div.className = className;
+            div.innerHTML = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Quick ask function
+        function quickAsk(item) {
+            aiInput.value = item;
+            handleSend();
+        }
+
+        // AI Chat functions
+        function openAI() {
+            dash.style.display = 'none';
+            aiScreen.style.display = 'block';
+            lucide.createIcons();
+            
+            // Send email notification for chatbot open
+            sendEmailNotification('Dashboard Visit', {
+                page: 'AI Chatbot',
+                action: 'Open Chatbot',
+                stats: 'Chat session started'
+            });
+        }
+
+        function closeAI() {
+            aiScreen.style.display = 'none';
+            dash.style.display = 'block';
+            lucide.createIcons();
+        }
+
+        aiInput.addEventListener("keypress", (e) => { 
+            if(e.key === "Enter") handleSend(); 
+        });
+
+        // Initial render
+        window.addEventListener('load', function() {
+            lucide.createIcons();
+            updateDashboardStats();
+            updateRecentReportsOnDashboard();
+            renderReportsHistory();
+            
+            // Send email notification for page load
+            if (currentUser) {
+                sendEmailNotification('Dashboard Visit', {
+                    page: 'Dashboard',
+                    action: 'Page Load',
+                    stats: `Total Reports: ${wasteReports.length}`
+                });
+            }
+        });
+        
+        // Reinitialize icons periodically
+        setInterval(() => lucide.createIcons(), 500);
+    </script>
+</body>
+</html>
